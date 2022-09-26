@@ -33,7 +33,7 @@ struct Stack
 int main ()
 {
     struct Stack stk1 = {NULL, 0, 0};
-    stack_Ctor (&stk1, 10);// == 0 || Error ("");
+    stack_Ctor (&stk1, 2);// == 0 || Error ("");
 
     stack_push (&stk1, 100);
     stack_push (&stk1, 101);
