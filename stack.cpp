@@ -40,7 +40,9 @@ int main ()
     stack_push (&stk1, 102);
     stack_push (&stk1, 103);
 
-    stack_pop (&stk1);
+    printf ("%lf\n", stk1.data_stk[2]);
+
+    stack_pop  (&stk1);
 
     stack_Dtor (&stk1);
 
@@ -51,10 +53,10 @@ int main ()
 
 int stack_Ctor (struct Stack *stk, int capacity_ctor)
 {
-    (stk -> capacity_stk) = capacity_ctor;
-    (stk -> size_stk) = 0;
+    (*stk).capacity_stk = capacity_ctor;
+    (*stk).size_stk = 0;
 
-    (stk -> data_stk) = (double*) calloc (capacity_ctor, sizeof (double));
+    (*stk).data_stk = (double*) calloc (capacity_ctor, sizeof (double));
 
     return SUCCESS;
 }
@@ -72,14 +74,14 @@ int stack_Dtor (struct Stack *stk)
 
 int stack_push (struct Stack *stk, double elem)
 {
-    if((stk -> size_stk) >= (stk -> capacity_stk))
+    if((*stk).size_stk >= (*stk).capacity_stk)
     {
         stack_resize (stk, stk_increase);
     }
 
-    *((stk -> data_stk) + (stk -> size_stk)) = elem;
+    *((*stk).data_stk + (*stk).size_stk) = elem;
 
-    (stk -> size_stk)++;
+    (*stk).size_stk++;
 
     return SUCCESS;
 }
@@ -90,16 +92,16 @@ int stack_resize (struct Stack *stk, int opt_resize)
 {
     if (opt_resize == stk_increase)
     {
-        (stk -> capacity_stk)*=2;
+        (*stk).capacity_stk*=2;
 
-        (stk -> data_stk) = (double*) realloc ( (stk -> data_stk), (stk -> capacity_stk)*sizeof (double));
+        (*stk).data_stk = (double*) realloc ((*stk).data_stk, (*stk).capacity_stk*sizeof (double));
     }
 
     if (opt_resize == stk_decrease)
     {
-        (stk -> capacity_stk)/=2;
+        (*stk).capacity_stk/=2;
 
-        (stk -> data_stk) = (double*) realloc ( (stk -> data_stk), (stk -> capacity_stk)*sizeof (double));
+        (*stk).data_stk = (double*) realloc ((*stk).data_stk, (*stk).capacity_stk*sizeof (double));
     }
 
     return SUCCESS;
@@ -109,11 +111,11 @@ int stack_resize (struct Stack *stk, int opt_resize)
 
 int stack_pop (struct Stack *stk)
 {
-    *((stk -> data_stk) + (stk -> size_stk)) = 0;
+    *((*stk).data_stk + (*stk).size_stk) = 0;
 
-    (stk -> size_stk)--;
+    (*stk).size_stk--;
 
-    if((stk -> size_stk) <= ((stk -> capacity_stk) / 4))
+    if((*stk).size_stk <= ((*stk).capacity_stk / 4))
     {
         stack_resize (stk, stk_decrease);
     }
