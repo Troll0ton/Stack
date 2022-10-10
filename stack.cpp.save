@@ -1,104 +1,43 @@
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <locale.h>
+#include "stack.h"
 
 //-----------------------------------------------------------------------------
 
-//#define DUMP(varname) #varname
-
-//-----------------------------------------------------------------------------
-
-#define POISON 50161703917
-
-//-----------------------------------------------------------------------------
-
-#define stk_increase 1
-#define stk_decrease 0
-#define SUCCESS 0
-
-//-----------------------------------------------------------------------------
-
-int stack_ctor   (struct Stack *stk, int capacity_ctor);
-int stack_dtor   (struct Stack *stk);
-
-double stack_pop (struct Stack *stk);
-int stack_push   (struct Stack *stk, double elem);
-int stack_resize (struct Stack *stk, int opt_resize);
-
-int stack_dmp    (struct Stack *stk);
-
-//-----------------------------------------------------------------------------
-
-struct Stack
+void stack_ctor_ext (struct Stack **stk, int capacity_ctor, const char* name, const char* filename, int line)
 {
-    char   *name_stk;
-    double *buffer_stk;
+    *stk = (struct Stack*) calloc (1, sizeof (struct Stack));
 
-    int     capacity_stk;
-    int     size_stk;
-    
-    unsigned int mis_code;
-};
+    (*stk)->name_stk     = name;
+    (*stk)->file_stk     = filename;
+    (*stk)->line_stk     = line;
 
-//-----------------------------------------------------------------------------
+    (*stk)->canary_open  = canary_1;
+    (*stk)->canary_close = canary_2;
 
-int main ()
-{
-    setlocale (LC_ALL, "Russian");
+    (*stk)->capacity_stk = capacity_ctor;
+    (*stk)->size_stk     = 0;
+    (*stk)->hash_code    = 0;
+    (*stk)->error_codes  = ERROR_FIELD;
+    (*stk)->buffer_stk   = (double*) calloc (1, capacity_ctor * sizeof (double));
+    (*stk)->cur_status   = "OK";
 
-    struct Stack stk1 = {0};
-
-    stack_ctor (&stk1, 10);// == 0 || Error ("");
-
-    for(int i = 1000; i < 1056; i++)
-    {
-        stack_push (&stk1, i);
-    }
-
-    stack_pop  (&stk1);
-
-    stack_dmp  (&stk1);
-
-    stack_dtor (&stk1);
-
-    return 0;
+    verificate_stack (*stk);
 }
 
 //-----------------------------------------------------------------------------
 
-int stack_ctor (struct Stack *stk, int capacity_ctor)
+void stack_dtor (struct Stack *stk)
 {
-    stk->capacity_stk = capacity_ctor;
-    stk->size_stk = 0;
-    stk->mis_code = 0;
-
-    stk->buffer_stk = (double*) calloc (1, capacity_ctor * sizeof (double));
-    
-    if(stk->buffer_stk == NULL)
-    {
-        stk->mis_code |= 1;    //incorrect memory allocation
-    }
-
-    return SUCCESS;
-}
-
-//-----------------------------------------------------------------------------
-
-int stack_dtor (struct Stack *stk)
-{
+    free (stk->buffer_stk);
     free (stk);
 
-    return SUCCESS;
+    verificate_stack (stk);
 }
 
 //-----------------------------------------------------------------------------
 
-int stack_push (struct Stack *stk, double elem)
+void stack_push (struct Stack *stk, double elem)
 {
-    if((stk->size_stk) == (stk->capacity_stk))
+    if((stk->size_stk) >= (stk->capacity_stk))
     {
         stack_resize (stk, stk_increase);
     }
@@ -107,23 +46,18 @@ int stack_push (struct Stack *stk, double elem)
 
     (stk->size_stk)++;
 
-    return SUCCESS;
+    verificate_stack (stk);
 }
 
 //-----------------------------------------------------------------------------
 
-int stack_resize (struct Stack *stk, int opt_resize)
+void stack_resize (struct Stack *stk, int opt_resize)
 {
     if (opt_resize == stk_increase)
     {
         stk->capacity_stk*=2;
 
         stk->buffer_stk = (double*) realloc (stk->buffer_stk, stk->capacity_stk*sizeof (double));
-        
-        if(stk->buffer_stk == NULL)unidentified element found
-        {
-            stk->mis_code |= 4;    //incorrect memory reallocation
-        }
     }
 
     else if (opt_resize == stk_decrease)
@@ -131,34 +65,18 @@ int stack_resize (struct Stack *stk, int opt_resize)
         stk->capacity_stk/=2;
 
         stk->buffer_stk = (double*) realloc (stk->buffer_stk, stk->capacity_stk*sizeof (double));
-        
-        if(stk->buffer_stk == NULL)
-        {
-            stk->mis_code |= 4;    //incorrect memory reallocation
-        }
-        
-        if(stk->capacity_stk < stk->size_stk)
-        {
-            stk->mis_code |= 8;    //stack overflow 
-        }
     }
 
-    else 
-    {
-        stk->mis_code |= 2;    //incorrect recize parameters
-    }
+    verificate_stack (stk);
 }
 
 //-----------------------------------------------------------------------------
 
 double stack_pop (struct Stack *stk)
 {
-    double elem_del = stk->buffer_stk[stk->size_stk];
-    
-    if(elem_del == POISON)
-    {
-        stk->mis_code |= 8;    //unidentified element found
-    }
+    doubcalculate_hash
+    double elem_del = stk->buffer_stk[stk->size_stk - 1];
+    stk->buffer_stk[stk->size_stk - 1] = 0;
 
     stk->size_stk--;
 
@@ -167,26 +85,160 @@ double stack_pop (struct Stack *stk)
         stack_resize (stk, stk_decrease);
     }
 
+    verificate_stack (stk);
+
     return elem_del;
 }
 
 //-----------------------------------------------------------------------------
 
-int stack_dmp    (struct Stack *stk)
+void verificate_stack (struct Stack *stk)   //111010111||0000000011111111
+{    
+    if((stk->error_codes & ERROR_FIELD) != ERROR_FIELD)
+    {
+        stk->error_codes |= (1 << 0);
+    }
+
+    if(stk->canary_open != canary_1)
+    {
+        stk->error_codes |= (1 << 1);
+    }
+
+    if(stk->canary_close != canary_2)
+    {
+        stk->error_codes |= (1 << 2);
+    }
+
+    if(stk->buffer_stk == NULL)
+    {
+        stk->error_codes |= (1 << 3);
+    }
+
+    if(stk->capacity_stk < stk->size_stk)
+    {
+        stk->error_codes |= (1 << 4);
+    }
+
+    if(stk->capacity_stk < 0)
+    {
+        stk->error_codes |= (1 << 5);
+    }
+
+    if(stk->size_stk < 0)
+    {
+        stk->error_codes |= (1 << 6);
+    }
+
+    if(stk == NULL)
+    {
+        stk->error_codes |= (1 << 7);
+    }
+    
+    if(stk == NULL)
+    {
+        stk->error_codes |= (1 << 7);
+    }
+
+    if ((stk->error_codes | ERROR_FIELD) != ERROR_FIELD)
+    {
+        stk->cur_status   = "FALSE";
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+double calculate_hash (struct Stack *stk)
 {
-    printf ("%s[%p](ok) at %s    \n"
-            "{                      \n"
-            "    size_stk     = %d  \n"
-            "    capacity_stk = %d  \n"
-            "                       \n"
-            "    buffer_stk[%p]       \n"
-            "    {                  \n",
-            stk->name_stk,
-            stk,
-            /*stk->cur_status_stk,*/
-            __FILE__,
-            stk->capacity_stk,
+    double sum = 0;
+
+    for(int i = 0; i < stk->capacity, i++)
+    {
+        sum += stk->buffer_stk[i];
+        sum %= HASHPAR;
+    }
+
+    return sum;
+}
+
+//-----------------------------------------------------------------------------
+
+void debug_stack (struct Stack *stk)
+{
+    handle_errors  (stk1);
+    stack_dump_ext (stk1);
+}
+
+//-----------------------------------------------------------------------------
+
+void handle_errors (struct Stack *stk)
+{
+    if(stk->error_codes | ERROR_FIELD) == ERROR_FIELD)
+    {
+        pritnf ("OK\n");
+    }
+
+    else
+    {
+        if(stk->error_codes & (1 << 0))
+        {
+            printf ("|||ATTENTION||| the integrity of error codes violated!\n\n");
+        }
+
+        if(stk->error_codes & (1 << 1))
+        {
+            printf ("ERROR - the integrity of first canary is broken\n");
+        }
+
+        if(stk->error_codes & (1 << 2))
+        {
+            printf ("ERROR - the integrity of second canary is broken\n");
+        }
+
+        if(stk->error_codes & (1 << 3))
+        {
+            printf ("ERROR - incorrect memory allocation for stack's data (NULL-pointer)\n");
+        }
+
+        if(stk->error_codes & (1 << 4))
+        {
+            printf ("ERROR - stack overflow\n");
+        }
+
+        if(stk->error_codes & (1 << 5))
+        {
+            printf ("ERROR - incorrect capacity value (below zero)\n");
+        }
+
+        if(stk->error_codes & (1 << 6))
+        {
+            printf ("ERROR - incorrect size value (below zero)\n");;
+        }
+
+        if(stk->error_codes & (1 << 7))
+        {
+            printf ("ERROR - incorrect memory allocation for stack (NULL-pointer\n");
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+void stack_dump_ext (struct Stack *stk)
+{
+    printf ("%s[%p](%s) at %s, LINE - %d \n"
+            "{                           \n"
+            "    canary_open  = %x       \n"
+            "    canary_close = %x       \n"
+            "    size_stk     = %d       \n"
+            "    capacity_stk = %d       \n"
+            "                            \n"
+            "    buffer_stk[%p]          \n"
+            "    {                       \n",
+            stk->name_stk + 1, stk, stk->cur_status, stk->file_stk, stk->line_stk,
+            stk->canary_open,
+            stk->canary_close,
             stk->size_stk,
+            stk->capacity_stk,
             stk->buffer_stk);
 
     for(int pos = 0; pos < stk->capacity_stk; pos++)
@@ -199,8 +251,6 @@ int stack_dmp    (struct Stack *stk)
 
     printf ("    }                  \n"
             "}                      \n");
-
-    return SUCCESS;
 }
 
 //-----------------------------------------------------------------------------
