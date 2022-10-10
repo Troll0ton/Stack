@@ -10,12 +10,16 @@
 #include <string.h>
 #include <assert.h>
 #include <locale.h>
+#include <limits.h>
 
 //-----------------------------------------------------------------------------
 
 #define canary_1 0xBADDED
 #define canary_2 0xDEDBAD
-#define HASHPAR  0xCABCEB
+
+//-----------------------------------------------------------------------------
+
+#define NUM_OF_MIS 9
 
 //-----------------------------------------------------------------------------
 
@@ -61,10 +65,11 @@ double  stack_pop        (struct Stack *stk);
 void    stack_push       (struct Stack *stk, double elem);
 void    stack_resize     (struct Stack *stk, int opt_resize);
 void    stack_dump_ext   (struct Stack *stk);
-void    verificate_stack (struct Stack *stk, double new_hash);
+void    verificate_stack (struct Stack *stk, unsigned int new_hash);
 void    handle_errors    (struct Stack *stk);
 void    debug_stack      (struct Stack *stk);
-double  calculate_hash   (struct Stack *stk);
+void    make_statements  (struct Stack *stk, unsigned int new_hash);
+unsigned int  calculate_hash   (struct Stack *stk);
 
 //-----------------------------------------------------------------------------
 

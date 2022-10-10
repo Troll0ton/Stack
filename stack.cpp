@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "error_data.h"
 
 //-----------------------------------------------------------------------------
 
@@ -9,37 +10,42 @@ void stack_ctor_ext (struct Stack **stk, int capacity_ctor, const char* name, co
     (*stk)->name_stk     = name;
     (*stk)->file_stk     = filename;
     (*stk)->line_stk     = line;
-
     (*stk)->canary_open  = canary_1;
     (*stk)->canary_close = canary_2;
-
     (*stk)->capacity_stk = capacity_ctor;
     (*stk)->size_stk     = 0;
-    (*stk)->hash_code    = 0;
     (*stk)->error_codes  = ERROR_FIELD;
-    (*stk)->buffer_stk   = (double*) calloc (1, capacity_ctor * sizeof (double));
+
+    if(capacity_ctor > 0)
+    {
+        (*stk)->buffer_stk   = (double*) calloc (1, capacity_ctor * sizeof (double));
+    }
+
     (*stk)->cur_status   = "OK";
+    (*stk)->hash_code    = calculate_hash (*stk);
 }
 
 //-----------------------------------------------------------------------------
 
 void stack_dtor (struct Stack *stk)
 {
-    double new_hash = calculate_hash (stk);
+    unsigned int new_hash = calculate_hash (stk);
 
     free (stk->buffer_stk);
     free (stk);
 
     verificate_stack (stk, new_hash);
+
+    stk->hash_code = calculate_hash (stk);
 }
 
 //-----------------------------------------------------------------------------
 
 void stack_push (struct Stack *stk, double elem)
 {
-    double new_hash = calculate_hash (stk);
+    unsigned int new_hash = calculate_hash (stk);
 
-    if((stk->size_stk) >= (stk->capacity_stk))
+    if((stk->size_stk + 1) > (stk->capacity_stk))
     {
         stack_resize (stk, stk_increase);
     }
@@ -49,16 +55,23 @@ void stack_push (struct Stack *stk, double elem)
     (stk->size_stk)++;
 
     verificate_stack (stk, new_hash);
+
+    stk->hash_code = calculate_hash (stk);
 }
 
 //-----------------------------------------------------------------------------
 
 void stack_resize (struct Stack *stk, int opt_resize)
 {
-    double new_hash = calculate_hash (stk);
+    unsigned int new_hash = calculate_hash (stk);
 
     if (opt_resize == stk_increase)
     {
+        if(stk->capacity_stk == 0)
+        {
+            stk->capacity_stk = 2;
+        }
+
         stk->capacity_stk*=2;
 
         stk->buffer_stk = (double*) realloc (stk->buffer_stk, stk->capacity_stk*sizeof (double));
@@ -72,13 +85,15 @@ void stack_resize (struct Stack *stk, int opt_resize)
     }
 
     verificate_stack (stk, new_hash);
+
+    stk->hash_code = calculate_hash (stk);
 }
 
 //-----------------------------------------------------------------------------
 
 double stack_pop (struct Stack *stk)
 {
-    double new_hash = calculate_hash (stk);
+    unsigned int new_hash = calculate_hash (stk);
 
     double elem_del = stk->buffer_stk[stk->size_stk - 1];
     stk->buffer_stk[stk->size_stk - 1] = 0;
@@ -92,79 +107,43 @@ double stack_pop (struct Stack *stk)
 
     verificate_stack (stk, new_hash);
 
+    stk->hash_code = calculate_hash (stk);
+
     return elem_del;
 }
 
 //-----------------------------------------------------------------------------
 
-void verificate_stack (struct Stack *stk, double new_hash)   //111010111||0000000011111111
+void verificate_stack (struct Stack *stk, unsigned int new_hash)   //111010111||0000000011111111
 {
-    if((stk->error_codes & ERROR_FIELD) != ERROR_FIELD)
-    {
-        stk->error_codes |= (1 << 0);
-    }
+    make_statements (stk, new_hash);
 
-    if(stk->canary_open != canary_1)
+    for(int i = 0; i < 9; i++)
     {
-        stk->error_codes |= (1 << 1);
-    }
-
-    if(stk->canary_close != canary_2)
-    {
-        stk->error_codes |= (1 << 2);
-    }
-
-    if(stk->buffer_stk == NULL)
-    {
-        stk->error_codes |= (1 << 3);
-    }
-
-    if(stk->capacity_stk < stk->size_stk)
-    {
-        stk->error_codes |= (1 << 4);
-    }
-
-    if(stk->capacity_stk < 0)
-    {
-        stk->error_codes |= (1 << 5);
-    }
-
-    if(stk->size_stk < 0)
-    {
-        stk->error_codes |= (1 << 6);
-    }
-
-    if(stk == NULL)
-    {
-        stk->error_codes |= (1 << 7);
-    }
-
-    if(stk == NULL)
-    {
-        stk->error_codes |= (1 << 7);
-    }
-
-    if(!(stk->hash_code - new_hash < 0.0001 && stk->hash_code - new_hash > -0.0001))
-    {
-        stk->error_codes |= (1 << 8);
+        if(verify_arr[i].statement)
+        {
+            stk->error_codes |= verify_arr[i].error_code;
+        }
     }
 
     if ((stk->error_codes | ERROR_FIELD) != ERROR_FIELD)
     {
-        stk->cur_status   = "FALSE";
+        stk->cur_status   = "ERROR";
     }
 }
 
 //-----------------------------------------------------------------------------
 
-double calculate_hash (struct Stack *stk)
+unsigned int calculate_hash (struct Stack *stk)
 {
-    double sum = 0;
+    unsigned int sum = 0;
+    unsigned int hash_par = 17;
 
     for(int i = 0; i < stk->capacity_stk; i++)
     {
-        sum += stk->buffer_stk[i];
-        sum = (double)(((int) sum) % HASHPAR);
+        sum += (int)(stk->buffer_stk[i]*100*hash_par);
+        sum %= UINT_MAX;
+        hash_par *= 17;
     }
 
     return sum;
@@ -189,49 +168,12 @@ void handle_errors (struct Stack *stk)
 
     else
     {
-        if(stk->error_codes & (1 << 0))
+        for(int i = 0; i < NUM_OF_MIS; i++)
         {
-            printf ("|||ATTENTION||| the integrity of error codes violated!\n\n");
-        }
-
-        if(stk->error_codes & (1 << 1))
-        {
-            printf ("ERROR - the integrity of first canary is broken\n");
-        }
-
-        if(stk->error_codes & (1 << 2))
-        {
-            printf ("ERROR - the integrity of second canary is broken\n");
-        }
-
-        if(stk->error_codes & (1 << 3))
-        {
-            printf ("ERROR - incorrect memory allocation for stack's data (NULL-pointer)\n");
-        }
-
-        if(stk->error_codes & (1 << 4))
-        {
-            printf ("ERROR - stack overflow\n");
-        }
-
-        if(stk->error_codes & (1 << 5))
-        {
-            printf ("ERROR - incorrect capacity value (below zero)\n");
-        }
-
-        if(stk->error_codes & (1 << 6))
-        {
-            printf ("ERROR - incorrect size value (below zero)\n");;
-        }
-
-        if(stk->error_codes & (1 << 7))
-        {
-            printf ("ERROR - incorrect memory allocation for stack (NULL-pointer\n");
-        }
-
-        if(stk->error_codes & (1 << 8))
-        {
-            printf ("ERROR -  invalid hash\n");
+            if(stk->error_codes & error_arr[i].error_code)
+            {
+                printf ("%s", error_arr[i].error_output);
+            }
         }
     }
 }
@@ -244,14 +186,17 @@ void stack_dump_ext (struct Stack *stk)
             "{                           \n"
             "    canary_open  = %x       \n"
             "    canary_close = %x       \n"
+            "    hash         = %x       \n"
             "    size_stk     = %d       \n"
             "    capacity_stk = %d       \n"
             "                            \n"
             "    buffer_stk[%p]          \n"
             "    {                       \n",
+
             stk->name_stk + 1, stk, stk->cur_status, stk->file_stk, stk->line_stk,
             stk->canary_open,
             stk->canary_close,
+            stk->hash_code,
             stk->size_stk,
             stk->capacity_stk,
             stk->buffer_stk);
@@ -260,12 +205,28 @@ void stack_dump_ext (struct Stack *stk)
     {
         printf (
 
-        "          *[%d] = %lg\n",
-        /*cur_status_elem*/ pos, stk->buffer_stk[pos]);
+            "          [%d] = %lg        \n",
+                    pos,   stk->buffer_stk[pos]);
     }
 
-    printf ("    }                  \n"
-            "}                      \n");
+    printf ("    }                       \n"
+            "}                           \n");
 }
 
 //-----------------------------------------------------------------------------
+
+void make_statements (struct Stack *stk, unsigned int new_hash)
+{
+    verify_arr[0].statement = ((stk->error_codes & ERROR_FIELD)!= ERROR_FIELD );
+    verify_arr[1].statement = (stk->canary_open                != canary_1    );
+    verify_arr[2].statement = (stk->canary_close               != canary_2    );
+    verify_arr[3].statement = (stk->buffer_stk                 == NULL        );
+    verify_arr[4].statement = (stk->capacity_stk               < stk->size_stk);
+    verify_arr[5].statement = (stk->capacity_stk               < 0            );
+    verify_arr[6].statement = (stk->capacity_stk               < 0            );
+    verify_arr[7].statement = (stk                             == NULL        );
+    verify_arr[8].statement = (stk->hash_code                  != new_hash    );
+}
+
+//-----------------------------------------------------------------------------
+

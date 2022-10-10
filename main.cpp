@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "error_data.h"
 
 //-----------------------------------------------------------------------------
 
@@ -8,9 +9,9 @@ int main ()
 
     struct Stack *stk1 = NULL;
 
-    stack_ctor (&stk1, 10);// == 0 || Error ("");
+    stack_ctor (&stk1, 40);// == 0 || Error ("");
 
-    for(int i = 1000; i < 1008; i++)
+    for(int i = 1000; i < 1009; i++)
     {
         stack_push (stk1, i);
     }
