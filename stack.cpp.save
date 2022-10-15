@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "error_data.h"
 
 //-----------------------------------------------------------------------------
 
@@ -216,7 +217,10 @@ void stack_dump_ext (struct Stack *stk)
 
 void make_statements (struct Stack *stk, unsigned int new_hash)
 {
-    verify_arr[0].statement = ((stk->error_codes & ERROR_FIELD)!= ERROR_FIELD );
+    if((stk->error_codes & ERROR_FIELD)!= ERROR_FIELD)
+    {
+        stk->error_codes |= (1 << 0);
+    }
     verify_arr[1].statement = (stk->canary_open                != canary_1    );
     verify_arr[2].statement = (stk->canary_close               != canary_2    );
     verify_arr[3].statement = (stk->buffer_stk                 == NULL        );
