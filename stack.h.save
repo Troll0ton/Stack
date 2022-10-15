@@ -40,20 +40,15 @@
 struct Stack
 {
     unsigned int   canary_open;
-
     const char    *name_stk;
     const char    *file_stk;
     int            line_stk;
     double        *buffer_stk;
-
     int            capacity_stk;
     int            size_stk;
-
     long long int  error_codes;
-
     char          *cur_status;
     unsigned int   hash_code;
-
     unsigned int   canary_close;
 };
 
@@ -67,7 +62,7 @@ struct Error_info
 
 //-----------------------------------------------------------------------------
 
-const  Error_info error_arr[]
+const struct Error_info error_arr[]
 {
     {(1 << 0),  "|||ATTENTION||| the integrity of error codes violated!           \n\n"},
     {(1 << 1),  "ERROR - the integrity of first canary is broken                    \n"},
@@ -75,33 +70,25 @@ const  Error_info error_arr[]
     {(1 << 3),  "ERROR - incorrect memory allocation for stack's data (NULL-pointer)\n"},
     {(1 << 4),  "ERROR - stack overflow                                             \n"},
     {(1 << 5),  "ERROR - incorrect capacity value (below zero)                      \n"},
-    {(1 << 6),  "ERROR - incorrect capacity value (below zero)                      \n"},
+    {(1 << 6),  "ERROR - incorrect size value (below zero)                          \n"},
     {(1 << 7),  "ERROR - incorrect memory allocation for stack (NULL-pointer)       \n"},
-    {(1 << 8),  "ERROR - data integrity breach (invalid hash)                       \n"}
+    {(1 << 8),  "ERROR - data integrity breach (invalid hash)                       \n"},
 };
 
 //-----------------------------------------------------------------------------
 
-struct Verificator
+enum ERROR_CODES
 {
-    unsigned error_code;
-    bool     statement;
+    ERR_FIELD  = (1 << 0),
+    ERR_CAN_1  = (1 << 1),
+    ERR_CAN_2  = (1 << 2),
+    ERR_MEMBUF = (1 << 3),
+    ERR_OVERF  = (1 << 4),
+    ERR_CAP    = (1 << 5),
+    ERR_SIZE   = (1 << 6),
+    ERR_MEMSTK = (1 << 7),
+    ERR_HASH   = (1 << 8)
 };
-
-//-----------------------------------------------------------------------------
-
-struct Verificator verify_arr[]
-{
-    {(1 << 0),  ((stk->error_codes & ERROR_FIELD) != ERROR_FIELD)},
-    {(1 << 1),  (stk->canary_open  != canary_1)},
-    {(1 << 2),  (stk->canary_close != canary_2)},
-    {(1 << 3),  (stk->buffer_stk == NULL)},
-    {(1 << 4),  (stk->capacity_stk < stk->size_stk)},
-    {(1 << 5),  (stk->capacity_stk < 0)},
-    {(1 << 6),  (stk->size_stk < 0)},
-    {(1 << 7),  (stk == NULL)},
-    {(1 << 8),  (stk->hash_code != new_hash)},
-}
 
 //-----------------------------------------------------------------------------
 
@@ -114,6 +101,7 @@ void    stack_dump_ext   (struct Stack *stk);
 void    verificate_stack (struct Stack *stk, unsigned int new_hash);
 void    handle_errors    (struct Stack *stk);
 void    debug_stack      (struct Stack *stk);
+void    make_statements  (struct Stack *stk, unsigned int new_hash);
 unsigned int  calculate_hash   (struct Stack *stk);
 
 //-----------------------------------------------------------------------------

@@ -1,14 +1,13 @@
 #include "stack.h"
-#include "error_data.h"
 
 //-----------------------------------------------------------------------------
 
-void stack_ctor_ext (struct Stack **stk, int capacity_ctor, const char* name, const char* filename, int line)
+void stack_ctor_ext (struct Stack **stk, int capacity_ctor, const char* name, const char* file_name, int line)
 {
     *stk = (struct Stack*) calloc (1, sizeof (struct Stack));
 
     (*stk)->name_stk     = name;
-    (*stk)->file_stk     = filename;
+    (*stk)->file_stk     = file_name;
     (*stk)->line_stk     = line;
     (*stk)->canary_open  = canary_1;
     (*stk)->canary_close = canary_2;
@@ -18,11 +17,11 @@ void stack_ctor_ext (struct Stack **stk, int capacity_ctor, const char* name, co
 
     if(capacity_ctor > 0)
     {
-        (*stk)->buffer_stk   = (double*) calloc (1, capacity_ctor * sizeof (double));
+        (*stk)->buffer_stk = (double*) calloc (1, capacity_ctor * sizeof (double));
     }
 
-    (*stk)->cur_status   = "OK";
-    (*stk)->hash_code    = calculate_hash (*stk);
+    (*stk)->cur_status = "OK";
+    (*stk)->hash_code  = calculate_hash (*stk);
 }
 
 //-----------------------------------------------------------------------------
@@ -31,10 +30,10 @@ void stack_dtor (struct Stack *stk)
 {
     unsigned int new_hash = calculate_hash (stk);
 
+    verificate_stack (stk, new_hash);
+
     free (stk->buffer_stk);
     free (stk);
-
-    verificate_stack (stk, new_hash);
 
     stk->hash_code = calculate_hash (stk);
 }
@@ -45,6 +44,8 @@ void stack_push (struct Stack *stk, double elem)
 {
     unsigned int new_hash = calculate_hash (stk);
 
+    verificate_stack (stk, new_hash);
+
     if((stk->size_stk + 1) > (stk->capacity_stk))
     {
         stack_resize (stk, stk_increase);
@@ -53,8 +54,6 @@ void stack_push (struct Stack *stk, double elem)
     *((stk->buffer_stk) + (stk->size_stk)) = elem;
 
     (stk->size_stk)++;
-
-    verificate_stack (stk, new_hash);
 
     stk->hash_code = calculate_hash (stk);
 }
@@ -84,8 +83,6 @@ void stack_resize (struct Stack *stk, int opt_resize)
         stk->buffer_stk = (double*) realloc (stk->buffer_stk, stk->capacity_stk*sizeof (double));
     }
 
-    verificate_stack (stk, new_hash);
-
     stk->hash_code = calculate_hash (stk);
 }
 
@@ -94,6 +91,8 @@ void stack_resize (struct Stack *stk, int opt_resize)
 double stack_pop (struct Stack *stk)
 {
     unsigned int new_hash = calculate_hash (stk);
+
+    verificate_stack (stk, new_hash);
 
     double elem_del = stk->buffer_stk[stk->size_stk - 1];
     stk->buffer_stk[stk->size_stk - 1] = 0;
@@ -105,8 +104,6 @@ double stack_pop (struct Stack *stk)
         stack_resize (stk, stk_decrease);
     }
 
-    verificate_stack (stk, new_hash);
-
     stk->hash_code = calculate_hash (stk);
 
     return elem_del;
@@ -116,15 +113,7 @@ double stack_pop (struct Stack *stk)
 
 void verificate_stack (struct Stack *stk, unsigned int new_hash)   //111010111||0000000011111111
 {
-    make_statements (stk, new_hash);
-
-    for(int i = 0; i < 9; i++)
-    {
-        if(verify_arr[i].statement)
-        {
-            stk->error_codes |= verify_arr[i].error_code;
-        }
-    }
+    check_errors (stk, new_hash);
 
     if ((stk->error_codes | ERROR_FIELD) != ERROR_FIELD)
     {
@@ -136,7 +125,7 @@ void verificate_stack (struct Stack *stk, unsigned int new_hash)   //111010111||
 
 unsigned int calculate_hash (struct Stack *stk)
 {
-    unsigned int sum = 0;
+    unsigned int sum      = 0;
     unsigned int hash_par = 17;
 
     for(int i = 0; i < stk->capacity_stk; i++)
@@ -215,17 +204,17 @@ void stack_dump_ext (struct Stack *stk)
 
 //-----------------------------------------------------------------------------
 
-void make_statements (struct Stack *stk, unsigned int new_hash)
+void check_errors (struct Stack *stk, unsigned int new_hash)
 {
-    verify_arr[0].statement = ((stk->error_codes & ERROR_FIELD)!= ERROR_FIELD );
-    verify_arr[1].statement = (stk->canary_open                != canary_1    );
-    verify_arr[2].statement = (stk->canary_close               != canary_2    );
-    verify_arr[3].statement = (stk->buffer_stk                 == NULL        );
-    verify_arr[4].statement = (stk->capacity_stk               < stk->size_stk);
-    verify_arr[5].statement = (stk->capacity_stk               < 0            );
-    verify_arr[6].statement = (stk->capacity_stk               < 0            );
-    verify_arr[7].statement = (stk                             == NULL        );
-    verify_arr[8].statement = (stk->hash_code                  != new_hash    );
+    if((stk->error_codes & ERROR_FIELD) != ERROR_FIELD) stk->error_codes|=ERR_FIELD;
+    if(stk->canary_open != canary_1)                    stk->error_codes|=ERR_CAN_1;
+    if(stk->canary_close != canary_2)                   stk->error_codes|=ERR_CAN_2;
+    if(stk->buffer_stk == NULL)                         stk->error_codes|=ERR_MEMBUF;
+    if(stk->capacity_stk < stk->size_stk)               stk->error_codes|=ERR_OVERF;
+    if(stk->capacity_stk < 0)                           stk->error_codes|=ERR_CAP;
+    if(stk->size_stk < 0)                               stk->error_codes|=ERR_SIZE;
+    if(stk == NULL)                                     stk->error_codes|=ERR_MEMSTK;
+    if(stk->hash_code != new_hash)                      stk->error_codes|=ERR_HASH;
 }
 
 //-----------------------------------------------------------------------------
