@@ -19,8 +19,6 @@ void stack_ctor_ext (struct Stack **stk, int capacity_ctor, const char* name, co
     {
         (*stk)->buffer_stk = (double*) calloc (1, capacity_ctor * sizeof (double));
     }
-    
-    else
 
     (*stk)->cur_status = "OK";
     (*stk)->hash_code  = calculate_hash (*stk);
@@ -75,14 +73,14 @@ void stack_resize (struct Stack *stk, int opt_resize)
 
         stk->capacity_stk*=2;
 
-        stk->buffer_stk = (double*) realloc (stk->buffer_stk, stk->capacity_stk*sizeof (double));
+        stk->buffer_stk = (double*) recalloc (stk->buffer_stk, stk->capacity_stk, stk->size_stk);
     }
 
     else if (opt_resize == stk_decrease)
     {
         stk->capacity_stk/=2;
 
-        stk->buffer_stk = (double*) realloc (stk->buffer_stk, stk->capacity_stk*sizeof (double));
+        stk->buffer_stk = (double*) recalloc (stk->buffer_stk, stk->capacity_stk, stk->size_stk);
     }
 
     stk->hash_code = calculate_hash (stk);
@@ -163,7 +161,7 @@ void handle_errors (struct Stack *stk)
         {
             if(stk->error_codes & error_arr[i].error_code)
             {
-                printf ("%s", error_arr[i].error_output);
+                printf ("%d %s\n", error_arr[i].error_code, error_arr[i].error_output);
             }
         }
     }
@@ -173,7 +171,10 @@ void handle_errors (struct Stack *stk)
 
 void stack_dump_ext (struct Stack *stk)
 {
-    printf ("%s[%p](%s) at %s, LINE - %d \n"
+    FILE *log_file = fopen ("log.txt", "w+");
+
+    fprintf (log_file,
+            "%s[%p](%s) at %s, LINE - %d \n"
             "{                           \n"
             "    canary_open  = %x       \n"
             "    canary_close = %x       \n"
@@ -194,14 +195,16 @@ void stack_dump_ext (struct Stack *stk)
 
     for(int pos = 0; pos < stk->capacity_stk; pos++)
     {
-        printf (
-
+        fprintf (log_file,
             "          [%d] = %lg        \n",
                     pos,   stk->buffer_stk[pos]);
     }
 
-    printf ("    }                       \n"
+    fprintf (log_file,
+            "    }                       \n"
             "}                           \n");
+
+    fclose (log_file);
 }
 
 //-----------------------------------------------------------------------------
@@ -220,4 +223,19 @@ void check_errors (struct Stack *stk, unsigned int new_hash)
 }
 
 //-----------------------------------------------------------------------------
+
+void recalloc (double *buffer, int capacity, int size)
+{
+    buffer = (double*) realloc (buffer, capacity*sizeof (double));
+
+    for(int pos = size; pos < capacity; pos++)
+    {
+        buffer[pos] = 0;
+    }
+    
+    return 
+}
+
+//-----------------------------------------------------------------------------
+
 

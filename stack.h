@@ -105,6 +105,7 @@ void          handle_errors    (struct Stack *stk);
 void          debug_stack      (struct Stack *stk);
 void          check_errors     (struct Stack *stk, unsigned int new_hash);
 unsigned int  calculate_hash   (struct Stack *stk);
+double       *recalloc (double *buffer, int capacity, int size);
 
 //-----------------------------------------------------------------------------
 

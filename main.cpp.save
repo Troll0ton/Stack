@@ -4,8 +4,6 @@
 
 int main ()
 {
-    FILE *file_out = fopen ("log.txt", "w+");
-    
     setlocale (LC_ALL, "Russian");
 
     struct Stack *stk1 = NULL;

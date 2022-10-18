@@ -4,15 +4,13 @@
 
 int main ()
 {
-    FILE *file_out = fopen ("log.txt", "w+");
-
     setlocale (LC_ALL, "Russian");
 
     struct Stack *stk1 = NULL;
 
-    stack_ctor (&stk1, 40);// == 0 || Error ("");
+    stack_ctor (&stk1, 2);// == 0 || Error ("");
 
-    for(int i = 1000; i < 1008; i++)
+    for(int i = 1000; i < 1040; i++)
     {
         stack_push (stk1, i);
     }
