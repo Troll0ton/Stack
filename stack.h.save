@@ -11,38 +11,42 @@
 #include <assert.h>
 #include <locale.h>
 #include <limits.h>
+#include <stdint.h>
 
 //-----------------------------------------------------------------------------
 
-#define CANARY_
-
-#define canary_1 0xBADDED
-#define canary_2 0xDEDBAD
+#define LEFT_CANARY  0xBADDED
+#define RIGHT_CANARY 0xDEDBAD
 
 //-----------------------------------------------------------------------------
 
-#define NUM_OF_MIS 9
+#define NUM_OF_MIS 8
+#define ERROR_     1
 
 //-----------------------------------------------------------------------------
 
-#define ERROR_FIELD 30867456 //111010111||0000000000000000
+#define ERROR_FIELD 0
 
 //-----------------------------------------------------------------------------
 
-// stack, capacity??
-
-#define stack_ctor(X, Y) stack_ctor_ext (X, Y, #X, __FILE__,  __LINE__)
-#define stack_dump()     stack_dump_ext (X,        __FILE__,  __LINE__)
+#define stack_ctor(stk, capacity) stack_ctor_ (stk, capacity, #stk, __FILE__,  __LINE__)
+#define stack_dump(stk)           stack_dump_ (stk,                 __FILE__,  __LINE__)
 
 //-----------------------------------------------------------------------------
 
 #define stk_increase 1
 #define stk_decrease 0
 
-struct StackInfo
-{
+//-----------------------------------------------------------------------------
 
-};
+typedef struct StackInfo
+{
+    const char *name;
+    const char *file;
+    int         line;
+    int32_t     error_codes;
+    char       *cur_status;
+} StackInfo;
 
 //-----------------------------------------------------------------------------
 
@@ -51,50 +55,29 @@ struct StackInfo
 // int STACK_SIZE = 64;
 
 
-struct Stack
+typedef struct Stack
 {
-    unsigned int   canary_open;
-    const char    *name_stk; // StackInfo
-    const char    *file_stk;
-    int            line_stk;
-    double        *buffer_stk;
-    int            capacity_stk;
-    int            size_stk;
-    long long int  error_codes;
-    char          *cur_status;
-    unsigned int   hash_code; // hash
-    unsigned int   canary_close;
-};
+    int32_t   canary_left;
+    StackInfo Stack_info;
+    double   *buffer_stk;
+    int       capacity_stk;
+    int       size_stk;
+    int32_t   hash;
+    int32_t   canary_right;
+} Stack;
 
 //-----------------------------------------------------------------------------
 
-struct Error_info
+typedef struct Error_info
 {
-    unsigned int error_code;
-    char *error_output;
-};
+    int32_t error_code;
+    char   *error_output;
+} Error_info;
 
 //-----------------------------------------------------------------------------
 
-const struct Error_info error_arr[]
-{
-    {(1 << 0),  "|||ATTENTION||| the integrity of error codes violated!           \n\n"},
-    {(1 << 1),  "ERROR - the integrity of first canary is broken                    \n"},
-    {(1 << 2),  "ERROR - the integrity of second canary is broken                   \n"},
-    {(1 << 3),  "ERROR - incorrect memory allocation for stack's data (NULL-pointer)\n"},
-    {(1 << 4),  "ERROR - stack overflow                                             \n"},
-    {(1 << 5),  "ERROR - incorrect capacity value (below zero)                      \n"},
-    {(1 << 6),  "ERROR - incorrect size value (below zero)                          \n"},
-    {(1 << 7),  "ERROR - incorrect memory allocation for stack (NULL-pointer)       \n"},
-    {(1 << 8),  "ERROR - data integrity breach (invalid hash)                       \n"},
-};
-
-
-//-----------------------------------------------------------------------------
-// ??
 enum ERROR_CODES
 {
-    ERR_FIELD  = (1 << 0),
     ERR_CAN_1  = (1 << 1),
     ERR_CAN_2  = (1 << 2),
     ERR_MEMBUF = (1 << 3),
@@ -107,22 +90,33 @@ enum ERROR_CODES
 
 //-----------------------------------------------------------------------------
 
-// ??
+const struct Error_info error_arr[]
+{
+    {ERR_CAN_1,  "ERROR - the integrity of first canary is broken                    \n"},
+    {ERR_CAN_2,  "ERROR - the integrity of second canary is broken                   \n"},
+    {ERR_MEMBUF, "ERROR - incorrect memory allocation for stack's data (NULL-pointer)\n"},
+    {ERR_OVERF,  "ERROR - stack overflow                                             \n"},
+    {ERR_CAP,    "ERROR - incorrect capacity value (below zero)                      \n"},
+    {ERR_SIZE,   "ERROR - incorrect size value (below zero)                          \n"},
+    {ERR_MEMSTK, "ERROR - incorrect memory allocation for stack (NULL-pointer)       \n"},
+    {ERR_HASH,   "ERROR - data integrity breach (invalid hash)                       \n"},
+};
 
-void          stack_ctor_ext   (struct Stack **stk, int         capacity_ctor,
-                                const char* name,   const char* filename,
-                                int line);
-void          stack_dtor       (struct Stack *stk);
-double        stack_pop        (struct Stack *stk);
-void          stack_push       (struct Stack *stk, double elem);
-void          stack_resize     (struct Stack *stk, int opt_resize);
-void          stack_dump_ext   (struct Stack *stk);
-void          verificate_stack (struct Stack *stk, unsigned int new_hash);
-void          handle_errors    (struct Stack *stk);
-void          debug_stack      (struct Stack *stk);
-void          check_errors     (struct Stack *stk, unsigned int new_hash);
-unsigned int  calculate_hash   (struct Stack *stk);
-double       *recalloc         (double *buffer, int capacity, int size);
+//-----------------------------------------------------------------------------
+
+int     stack_ctor_      (struct Stack *stk,     int capacity_ctor, const char* stk_name,
+                          const char* file_name, int stk_line                            );
+void    stack_dtor       (struct Stack *stk);
+double  stack_pop        (struct Stack *stk);
+void    stack_push       (struct Stack *stk, double elem);
+void    stack_resize     (struct Stack *stk, int opt_resize);
+void    stack_dump_      (struct Stack *stk);
+void    verificate_stack (struct Stack *stk, int32_t new_hash);
+void    handle_errors    (struct Stack *stk);
+void    debug_stack      (struct Stack *stk);
+void    check_errors     (struct Stack *stk, int32_t new_hash);
+int32_t calculate_hash   (struct Stack *stk);
+void   *recalloc         (void *buffer, int capacity, int size);
 
 //-----------------------------------------------------------------------------
 

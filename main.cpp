@@ -4,24 +4,23 @@
 
 int main ()
 {
+    Stack stk1;
 
-    struct Stack *stk1 = NULL;
-
-    stack_ctor (&stk1, 2);// == 0 || Error ("");
+    stack_ctor (&stk1, 2);
 
     for(int i = 1000; i < 1040; i++)
     {
-        stack_push (stk1, i);
+        stack_push (&stk1, i);
     }
 
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < 20; i++)
     {
-        stack_pop (stk1);
+        stack_pop (&stk1);
     }
 
-    debug_stack (stk1);
+    debug_stack (&stk1);
 
-    stack_dtor (stk1);
+    stack_dtor (&stk1);
 
     return 0;
 }
