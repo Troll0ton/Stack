@@ -1,4 +1,4 @@
-stk1[00B36AC0](OK) at main.cpp, LINE - 11 
+stk1[008C6790](OK) at main.cpp, LINE - 11 
 {                           
     canary_open  = badded       
     canary_close = dedbad       
@@ -6,7 +6,7 @@ stk1[00B36AC0](OK) at main.cpp, LINE - 11
     size_stk     = 34       
     capacity_stk = 64       
                             
-    buffer_stk[00B36B00]          
+    buffer_stk[008C67D0]          
     {                       
           [0] = 1000        
           [1] = 1001        

@@ -4,7 +4,6 @@
 
 int main ()
 {
-    setlocale (LC_ALL, "Russian");
 
     struct Stack *stk1 = NULL;
 

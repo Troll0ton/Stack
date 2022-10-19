@@ -14,6 +14,9 @@
 
 //-----------------------------------------------------------------------------
 
+#define  LEFT_CANARY
+#define  RIGHT_CANARY
+
 #define canary_1 0xBADDED
 #define canary_2 0xDEDBAD
 
@@ -23,9 +26,12 @@
 
 //-----------------------------------------------------------------------------
 
+// 0x
 #define ERROR_FIELD 30867456 //111010111||0000000000000000
 
 //-----------------------------------------------------------------------------
+
+// stack, capacity??
 
 #define stack_ctor(X, Y) stack_ctor_ext (X, Y, #X, __FILE__,  __LINE__)
 #define stack_dump()     stack_dump_ext (X,        __FILE__,  __LINE__)
@@ -35,12 +41,22 @@
 #define stk_increase 1
 #define stk_decrease 0
 
+struct StackInfo
+{
+
+};
+
 //-----------------------------------------------------------------------------
+
+
+// struct Stack;
+// int STACK_SIZE = 64;
+
 
 struct Stack
 {
     unsigned int   canary_open;
-    const char    *name_stk;
+    const char    *name_stk; // StackInfo
     const char    *file_stk;
     int            line_stk;
     double        *buffer_stk;
@@ -48,7 +64,7 @@ struct Stack
     int            size_stk;
     long long int  error_codes;
     char          *cur_status;
-    unsigned int   hash_code;
+    unsigned int   hash_code; // hash
     unsigned int   canary_close;
 };
 
@@ -56,7 +72,7 @@ struct Stack
 
 struct Error_info
 {
-    unsigned error_code;
+    unsigned int error_code;
     char *error_output;
 };
 
@@ -75,8 +91,9 @@ const struct Error_info error_arr[]
     {(1 << 8),  "ERROR - data integrity breach (invalid hash)                       \n"},
 };
 
-//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+// ??
 enum ERROR_CODES
 {
     ERR_FIELD  = (1 << 0),
@@ -92,6 +109,8 @@ enum ERROR_CODES
 
 //-----------------------------------------------------------------------------
 
+// ??
+
 void          stack_ctor_ext   (struct Stack **stk, int         capacity_ctor,
                                 const char* name,   const char* filename,
                                 int line);
@@ -105,7 +124,7 @@ void          handle_errors    (struct Stack *stk);
 void          debug_stack      (struct Stack *stk);
 void          check_errors     (struct Stack *stk, unsigned int new_hash);
 unsigned int  calculate_hash   (struct Stack *stk);
-double       *recalloc (double *buffer, int capacity, int size);
+double       *recalloc         (double *buffer, int capacity, int size);
 
 //-----------------------------------------------------------------------------
 
