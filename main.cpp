@@ -8,7 +8,7 @@ int main ()
 
     stack_ctor (&stk1, 2);
 
-    for(int i = 1000; i < 1040; i++)
+    for(int i = 1000; i < 1200; i++)
     {
         stack_push (&stk1, i);
     }

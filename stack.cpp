@@ -8,7 +8,7 @@ int stack_ctor_ (struct Stack *stk,     int capacity_ctor, const char* stk_name,
     stk->canary_left  = LEFT_CANARY;
     stk->canary_right = RIGHT_CANARY;
     stk->capacity_stk = capacity_ctor;
-    stk->size_stk     = 0;
+    stk->size_stk = 0;
 
     (stk->Stack_info).name = stk_name;
     (stk->Stack_info).file = file_name;
@@ -130,7 +130,7 @@ int32_t calculate_hash (struct Stack *stk)
 
     for(int i = 0; i < stk->capacity_stk; i++)
     {
-        sum += (int)(stk->buffer_stk[i] * 100 * hash_par);
+        sum += (int32_t)(stk->buffer_stk[i] * 100 * hash_par);
         sum %= UINT_MAX;
         hash_par *= 17;
     }
@@ -212,7 +212,7 @@ void stack_dump_ (struct Stack *stk)
 
 void check_errors (struct Stack *stk, int32_t new_hash)
 {
-    if(stk->canary_left  != LEFT_CANARY)   (stk->Stack_info).error_codes |= ERR_CAN_1;
+    if(stk->canary_left != LEFT_CANARY)    (stk->Stack_info).error_codes |= ERR_CAN_1;
     if(stk->canary_right != RIGHT_CANARY)  (stk->Stack_info).error_codes |= ERR_CAN_2;
     if(stk->buffer_stk == NULL)            (stk->Stack_info).error_codes |= ERR_MEMBUF;
     if(stk->capacity_stk < stk->size_stk)  (stk->Stack_info).error_codes |= ERR_OVERF;
