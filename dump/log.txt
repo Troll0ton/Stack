@@ -6,7 +6,7 @@ stk1[0064FECC](OK) at main.cpp, LINE - 9
     size_stk     = 180       
     capacity_stk = 256       
                             
-    buffer_stk[00C80C60]          
+    buffer_stk[00CF2710]          
     {                       
           [0] = 1000        
           [1] = 1001        

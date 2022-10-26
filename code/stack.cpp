@@ -1,4 +1,4 @@
-#include "stack.h"
+#include "../include/stack.h"
 
 //-----------------------------------------------------------------------------
 
@@ -8,7 +8,7 @@ int stack_ctor_ (struct Stack *stk,     int capacity_ctor, const char* stk_name,
     stk->canary_left  = LEFT_CANARY;
     stk->canary_right = RIGHT_CANARY;
     stk->capacity_stk = capacity_ctor;
-    stk->size_stk     = 0;
+    stk->size_stk = 0;
 
     (stk->Stack_info).name = stk_name;
     (stk->Stack_info).file = file_name;
@@ -143,7 +143,7 @@ int32_t calculate_hash (struct Stack *stk)
 void debug_stack (struct Stack *stk)
 {
     handle_errors  (stk);
-    stack_dump_ (stk);
+    stack_dump_    (stk);
 }
 
 //-----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ void handle_errors (struct Stack *stk)
 
 void stack_dump_ (struct Stack *stk)
 {
-    FILE *log_file = fopen ("log.txt", "w+");
+    FILE *log_file = fopen ("../dump/log.txt", "w+");
 
     fprintf (log_file,
              "%s[%p](%s) at %s, LINE - %d \n"
@@ -187,7 +187,6 @@ void stack_dump_ (struct Stack *stk)
              (stk->Stack_info).name + 1,    stk,
              (stk->Stack_info).cur_status, (stk->Stack_info).file,
              (stk->Stack_info).line,
-             
              stk->canary_left,
              stk->canary_right,
              stk->hash,
@@ -213,7 +212,7 @@ void stack_dump_ (struct Stack *stk)
 
 void check_errors (struct Stack *stk, int32_t new_hash)
 {
-    if(stk->canary_left  != LEFT_CANARY)   (stk->Stack_info).error_codes |= ERR_CAN_1;
+    if(stk->canary_left != LEFT_CANARY)    (stk->Stack_info).error_codes |= ERR_CAN_1;
     if(stk->canary_right != RIGHT_CANARY)  (stk->Stack_info).error_codes |= ERR_CAN_2;
     if(stk->buffer_stk == NULL)            (stk->Stack_info).error_codes |= ERR_MEMBUF;
     if(stk->capacity_stk < stk->size_stk)  (stk->Stack_info).error_codes |= ERR_OVERF;

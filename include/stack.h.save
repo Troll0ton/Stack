@@ -38,7 +38,7 @@
 
 //-----------------------------------------------------------------------------
 
-typedef struct StackInfo
+typedef struct StackInfo   
 {
     const char *name;
     const char *file;
@@ -49,12 +49,7 @@ typedef struct StackInfo
 
 //-----------------------------------------------------------------------------
 
-
-struct Stack;
-// int STACK_SIZE = 64;
-
-
-typedef struct Stack
+typedef struct Stack       
 {
     int32_t   canary_left;
     StackInfo Stack_info;
@@ -105,7 +100,7 @@ const struct Error_info error_arr[]
 
 int     stack_ctor_      (struct Stack *stk,     int capacity_ctor, const char* stk_name,
                           const char* file_name, int stk_line                            );
-void    stack_dtor       (struct Stack *stk);
+void    stack_dtor       (Stack *stk);
 double  stack_pop        (struct Stack *stk);
 void    stack_push       (struct Stack *stk, double elem);
 void    stack_resize     (struct Stack *stk, int opt_resize);

@@ -38,7 +38,7 @@
 
 //-----------------------------------------------------------------------------
 
-typedef struct StackInfo   //////////////////////
+typedef struct StackInfo
 {
     const char *name;
     const char *file;
@@ -49,7 +49,7 @@ typedef struct StackInfo   //////////////////////
 
 //-----------------------------------------------------------------------------
 
-typedef struct Stack       ////////////////////////
+typedef struct Stack
 {
     int32_t   canary_left;
     StackInfo Stack_info;
@@ -98,18 +98,18 @@ const struct Error_info error_arr[]
 
 //-----------------------------------------------------------------------------
 
-int     stack_ctor_      (struct Stack *stk,     int capacity_ctor, const char* stk_name,
+int     stack_ctor_      (Stack *stk,            int capacity_ctor, const char* stk_name,
                           const char* file_name, int stk_line                            );
 void    stack_dtor       (Stack *stk);
-double  stack_pop        (struct Stack *stk);
-void    stack_push       (struct Stack *stk, double elem);
-void    stack_resize     (struct Stack *stk, int opt_resize);
-void    stack_dump_      (struct Stack *stk);
-void    verificate_stack (struct Stack *stk, int32_t new_hash);
-void    handle_errors    (struct Stack *stk);
-void    debug_stack      (struct Stack *stk);
-void    check_errors     (struct Stack *stk, int32_t new_hash);
-int32_t calculate_hash   (struct Stack *stk);
+double  stack_pop        (Stack *stk);
+void    stack_push       (Stack *stk, double elem);
+void    stack_resize     (Stack *stk, int opt_resize);
+void    stack_dump_      (Stack *stk);
+void    verificate_stack (Stack *stk, int32_t new_hash);
+void    handle_errors    (Stack *stk);
+void    debug_stack      (Stack *stk);
+void    check_errors     (Stack *stk, int32_t new_hash);
+int32_t calculate_hash   (Stack *stk);
 void   *recalloc         (void *buffer, int capacity, int size);
 
 //-----------------------------------------------------------------------------

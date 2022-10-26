@@ -1,4 +1,4 @@
-#include "stack.h"
+#include "../include/stack.h"
 
 //-----------------------------------------------------------------------------
 
@@ -171,7 +171,7 @@ void handle_errors (struct Stack *stk)
 
 void stack_dump_ (struct Stack *stk)
 {
-    FILE *log_file = fopen ("log.txt", "w+");
+    FILE *log_file = fopen ("../dump/log.txt", "w+");
 
     fprintf (log_file,
              "%s[%p](%s) at %s, LINE - %d \n"
