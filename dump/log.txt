@@ -1,12 +1,12 @@
-stk1[0064FECC](OK) at main.cpp, LINE - 9 
+Stk[0064FECC](OK) at main.cpp, LINE - 9 
 {                           
     canary_open  = badded       
     canary_close = dedbad       
     hash         = 9f2aff0c       
-    size_stk     = 180       
-    capacity_stk = 256       
+    size_Stk     = 180       
+    capacity_Stk = 256       
                             
-    buffer_stk[00CF2710]          
+    buffer_Stk[00CB2478]          
     {                       
           [0] = 1000        
           [1] = 1001        

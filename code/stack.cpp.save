@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 
 int stack_ctor_ (struct Stack *stk,     int capacity_ctor, const char* stk_name,
-                  const char* file_name, int stk_line                           )
+                 const char* file_name, int stk_line                            )
 {
     stk->canary_left  = LEFT_CANARY;
     stk->canary_right = RIGHT_CANARY;
@@ -31,7 +31,7 @@ int stack_ctor_ (struct Stack *stk,     int capacity_ctor, const char* stk_name,
 
 void stack_dtor (struct Stack *stk)
 {
-    int32_t new_hash = calculate_hash (stk);
+    int new_hash = calculate_hash (stk);
 
     verificate_stack (stk, new_hash);
 
@@ -44,13 +44,13 @@ void stack_dtor (struct Stack *stk)
 
 void stack_push (struct Stack *stk, double elem)
 {
-    int32_t new_hash = calculate_hash (stk);
+    int new_hash = calculate_hash (stk);
 
     verificate_stack (stk, new_hash);
 
     if(stk->size_stk + 1 > stk->capacity_stk)
     {
-        stack_resize (stk, stk_increase);
+        stack_resize (stk, STK_INCREASE);
     }
 
     stk->buffer_stk[stk->size_stk] = elem;
@@ -64,7 +64,7 @@ void stack_push (struct Stack *stk, double elem)
 
 void stack_resize (struct Stack *stk, int opt_resize)
 {
-    if (opt_resize == stk_increase)
+    if(opt_resize == STK_INCREASE)
     {
         if(stk->capacity_stk == 0)
         {
@@ -76,7 +76,7 @@ void stack_resize (struct Stack *stk, int opt_resize)
         stk->buffer_stk = (double*) recalloc (stk->buffer_stk, stk->capacity_stk, stk->size_stk);
     }
 
-    else if (opt_resize == stk_decrease)
+    else if(opt_resize == STK_DECREASE)
     {
         stk->capacity_stk /= 2;
 
@@ -90,7 +90,7 @@ void stack_resize (struct Stack *stk, int opt_resize)
 
 double stack_pop (struct Stack *stk)
 {
-    int32_t new_hash = calculate_hash (stk);
+    int new_hash = calculate_hash (stk);
 
     verificate_stack (stk, new_hash);
 
@@ -101,7 +101,7 @@ double stack_pop (struct Stack *stk)
 
     if(stk->size_stk <= stk->capacity_stk / 4)
     {
-        stack_resize (stk, stk_decrease);
+        stack_resize (stk, STK_DECREASE);
     }
 
     stk->hash = calculate_hash (stk);
@@ -111,7 +111,7 @@ double stack_pop (struct Stack *stk)
 
 //-----------------------------------------------------------------------------
 
-void verificate_stack (struct Stack *stk, int32_t new_hash)
+void verificate_stack (struct Stack *stk, int new_hash)
 {
     check_errors (stk, new_hash);
 
@@ -123,14 +123,14 @@ void verificate_stack (struct Stack *stk, int32_t new_hash)
 
 //-----------------------------------------------------------------------------
 
-int32_t calculate_hash (struct Stack *stk)
+int calculate_hash (struct Stack *stk)
 {
-    int32_t sum = 0;
-    int32_t hash_par = 17;
+    int sum = 0;
+    int hash_par = 17;
 
     for(int i = 0; i < stk->capacity_stk; i++)
     {
-        sum += (int32_t)(stk->buffer_stk[i] * 100 * hash_par);
+        sum += (int)(stk->buffer_stk[i] * 100 * hash_par);
         sum %= UINT_MAX;
         hash_par *= 17;
     }
@@ -143,7 +143,7 @@ int32_t calculate_hash (struct Stack *stk)
 void debug_stack (struct Stack *stk)
 {
     handle_errors  (stk);
-    stack_dump_ (stk);
+    stack_dump_    (stk);
 }
 
 //-----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ void stack_dump_ (struct Stack *stk)
 
 //-----------------------------------------------------------------------------
 
-void check_errors (struct Stack *stk, int32_t new_hash)
+void check_errors (struct Stack *stk, int new_hash)
 {
     if(stk->canary_left != LEFT_CANARY)    (stk->Stack_info).error_codes |= ERR_CAN_1;
     if(stk->canary_right != RIGHT_CANARY)  (stk->Stack_info).error_codes |= ERR_CAN_2;
@@ -224,13 +224,13 @@ void check_errors (struct Stack *stk, int32_t new_hash)
 
 //-----------------------------------------------------------------------------
 
-void *recalloc (void *buffer, int capacity, int size)
+void *recalloc (void *buffer, int capacity, int size, int size_of_type)
 {
-    char *pointer = (char*) realloc ((char*) buffer, capacity * sizeof (double));
+    char *pointer = (char*) realloc ((char*) buffer, capacity * size_of_type);
 
     if(capacity > size)
     {
-        memset (pointer + size * sizeof (double), '\0', (capacity - size) * sizeof (double));
+        memset (pointer + size * size_of_type, '\0', (capacity - size) * size_of_type);
     }
 
     return (void*) pointer;

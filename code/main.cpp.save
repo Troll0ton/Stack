@@ -4,7 +4,7 @@
 
 int main ()
 {
-    Stack stk1;
+    Stack stk1 = { 0 };
 
     stack_ctor (&stk1, 2);
 

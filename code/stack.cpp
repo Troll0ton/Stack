@@ -2,137 +2,137 @@
 
 //-----------------------------------------------------------------------------
 
-int stack_ctor_ (struct Stack *stk,     int capacity_ctor, const char* stk_name,
-                  const char* file_name, int stk_line                           )
+int stack_ctor_ (struct Stack *Stk,     int capacity_ctor, const char* stk_name,
+                 const char* file_name, int stk_line                            )
 {
-    stk->canary_left  = LEFT_CANARY;
-    stk->canary_right = RIGHT_CANARY;
-    stk->capacity_stk = capacity_ctor;
-    stk->size_stk = 0;
+    Stk->canary_left  = LEFT_CANARY;
+    Stk->canary_right = RIGHT_CANARY;
+    Stk->capacity_Stk = capacity_ctor;
+    Stk->size_Stk = 0;
 
-    (stk->Stack_info).name = stk_name;
-    (stk->Stack_info).file = file_name;
-    (stk->Stack_info).line = stk_line;
-    (stk->Stack_info).error_codes = 0;
-    (stk->Stack_info).cur_status = "OK";
+    (Stk->Stack_info).name = stk_name;
+    (Stk->Stack_info).file = file_name;
+    (Stk->Stack_info).line = stk_line;
+    (Stk->Stack_info).error_codes = 0;
+    (Stk->Stack_info).cur_status = "OK";
 
     if (capacity_ctor >= 0)
     {
-        stk->buffer_stk = (double*) calloc (1, capacity_ctor * sizeof (double));
+        Stk->buffer_stk = (double*) calloc (1, capacity_ctor * sizeof (double));
     }
 
-    stk->hash = calculate_hash (stk);
-    verificate_stack (stk, stk->hash);
+    Stk->hash = calculate_hash (Stk);
+    verificate_stack (Stk, Stk->hash);
 
     return 0;
 }
 
 //-----------------------------------------------------------------------------
 
-void stack_dtor (struct Stack *stk)
+void stack_dtor (struct Stack *Stk)
 {
-    int32_t new_hash = calculate_hash (stk);
+    int new_hash = calculate_hash (Stk);
 
-    verificate_stack (stk, new_hash);
+    verificate_stack (Stk, new_hash);
 
-    free (stk->buffer_stk);
+    free (Stk->buffer_stk);
 
-    stk->hash = -1;
+    Stk->hash = -1;
 }
 
 //-----------------------------------------------------------------------------
 
-void stack_push (struct Stack *stk, double elem)
+void stack_push (struct Stack *Stk, double elem)
 {
-    int32_t new_hash = calculate_hash (stk);
+    int new_hash = calculate_hash (Stk);
 
-    verificate_stack (stk, new_hash);
+    verificate_stack (Stk, new_hash);
 
-    if(stk->size_stk + 1 > stk->capacity_stk)
+    if(Stk->size_Stk + 1 > Stk->capacity_Stk)
     {
-        stack_resize (stk, stk_increase);
+        stack_resize (Stk, Stk_INCREASE);
     }
 
-    stk->buffer_stk[stk->size_stk] = elem;
+    Stk->buffer_stk[Stk->size_Stk] = elem;
 
-    (stk->size_stk)++;
+    (Stk->size_Stk)++;
 
-    stk->hash = calculate_hash (stk);
+    Stk->hash = calculate_hash (Stk);
 }
 
 //-----------------------------------------------------------------------------
 
-void stack_resize (struct Stack *stk, int opt_resize)
+void stack_resize (struct Stack *Stk, int opt_resize)
 {
-    if (opt_resize == stk_increase)
+    if(opt_resize == Stk_INCREASE)
     {
-        if(stk->capacity_stk == 0)
+        if(Stk->capacity_Stk == 0)
         {
-            stk->capacity_stk = 2;
+            Stk->capacity_Stk = 2;
         }
 
-        stk->capacity_stk *= 2;
+        Stk->capacity_Stk *= 2;
 
-        stk->buffer_stk = (double*) recalloc (stk->buffer_stk, stk->capacity_stk, stk->size_stk);
+        Stk->buffer_stk = (double*) recalloc (Stk->buffer_stk, Stk->capacity_Stk, Stk->size_Stk, sizeof (double));
     }
 
-    else if (opt_resize == stk_decrease)
+    else if(opt_resize == Stk_DECREASE)
     {
-        stk->capacity_stk /= 2;
+        Stk->capacity_Stk /= 2;
 
-        stk->buffer_stk = (double*) recalloc (stk->buffer_stk, stk->capacity_stk, stk->size_stk);
+        Stk->buffer_stk = (double*) recalloc (Stk->buffer_stk, Stk->capacity_Stk, Stk->size_Stk, sizeof (double));
     }
 
-    stk->hash = calculate_hash (stk);
+    Stk->hash = calculate_hash (Stk);
 }
 
 //-----------------------------------------------------------------------------
 
-double stack_pop (struct Stack *stk)
+double stack_pop (struct Stack *Stk)
 {
-    int32_t new_hash = calculate_hash (stk);
+    int new_hash = calculate_hash (Stk);
 
-    verificate_stack (stk, new_hash);
+    verificate_stack (Stk, new_hash);
 
-    double elem_del = stk->buffer_stk[stk->size_stk - 1];
-    stk->buffer_stk[stk->size_stk - 1] = 0;
+    double elem_del = Stk->buffer_stk[Stk->size_Stk - 1];
+    Stk->buffer_stk[Stk->size_Stk - 1] = 0;
 
-    stk->size_stk--;
+    Stk->size_Stk--;
 
-    if(stk->size_stk <= stk->capacity_stk / 4)
+    if(Stk->size_Stk <= Stk->capacity_Stk / 4)
     {
-        stack_resize (stk, stk_decrease);
+        stack_resize (Stk, Stk_DECREASE);
     }
 
-    stk->hash = calculate_hash (stk);
+    Stk->hash = calculate_hash (Stk);
 
     return elem_del;
 }
 
 //-----------------------------------------------------------------------------
 
-void verificate_stack (struct Stack *stk, int32_t new_hash)
+void verificate_stack (struct Stack *Stk, int new_hash)
 {
-    check_errors (stk, new_hash);
+    check_errors (Stk, new_hash);
 
-    if ((stk->Stack_info).error_codes != 0)
+    if ((Stk->Stack_info).error_codes != 0)
     {
-        (stk->Stack_info).cur_status = "ERROR";
+        (Stk->Stack_info).cur_status = "ERROR";
     }
 }
 
 //-----------------------------------------------------------------------------
 
-int32_t calculate_hash (struct Stack *stk)
+int calculate_hash (struct Stack *Stk)
 {
-    int32_t sum = 0;
-    int32_t hash_par = 17;
+    int sum = 0;
+    int hash_par = HASH_CONST;
 
-    for(int i = 0; i < stk->capacity_stk; i++)
+    for(int i = 0; i < Stk->capacity_Stk; i++)
     {
-        sum += (int32_t)(stk->buffer_stk[i] * 100 * hash_par);
+        sum += (int)(Stk->buffer_stk[i] * HASH_BASE * hash_par);
         sum %= UINT_MAX;
-        hash_par *= 17;
+        hash_par *= HASH_CONST;
     }
 
     return sum;
@@ -140,17 +140,17 @@ int32_t calculate_hash (struct Stack *stk)
 
 //-----------------------------------------------------------------------------
 
-void debug_stack (struct Stack *stk)
+void debug_stack (struct Stack *Stk)
 {
-    handle_errors  (stk);
-    stack_dump_    (stk);
+    handle_errors  (Stk);
+    stack_dump_    (Stk);
 }
 
 //-----------------------------------------------------------------------------
 
-void handle_errors (struct Stack *stk)
+void handle_errors (struct Stack *Stk)
 {
-    if((stk->Stack_info).error_codes == 0)
+    if((Stk->Stack_info).error_codes == 0)
     {
         printf ("OK\n");
     }
@@ -159,7 +159,7 @@ void handle_errors (struct Stack *stk)
     {
         for(int i = 0; i < NUM_OF_MIS; i++)
         {
-            if((stk->Stack_info).error_codes & error_arr[i].error_code)
+            if((Stk->Stack_info).error_codes & error_arr[i].error_code)
             {
                 printf ("%d %s\n", error_arr[i].error_code, error_arr[i].error_output);
             }
@@ -169,7 +169,7 @@ void handle_errors (struct Stack *stk)
 
 //-----------------------------------------------------------------------------
 
-void stack_dump_ (struct Stack *stk)
+void stack_dump_ (struct Stack *Stk)
 {
     FILE *log_file = fopen ("../dump/log.txt", "w+");
 
@@ -179,26 +179,26 @@ void stack_dump_ (struct Stack *stk)
              "    canary_open  = %x       \n"
              "    canary_close = %x       \n"
              "    hash         = %x       \n"
-             "    size_stk     = %d       \n"
-             "    capacity_stk = %d       \n"
+             "    size_Stk     = %d       \n"
+             "    capacity_Stk = %d       \n"
              "                            \n"
              "    buffer_stk[%p]          \n"
              "    {                       \n",
-             (stk->Stack_info).name + 1,    stk,
-             (stk->Stack_info).cur_status, (stk->Stack_info).file,
-             (stk->Stack_info).line,
-             stk->canary_left,
-             stk->canary_right,
-             stk->hash,
-             stk->size_stk,
-             stk->capacity_stk,
-             stk->buffer_stk);
+             (Stk->Stack_info).name + 1,    Stk,
+             (Stk->Stack_info).cur_status, (Stk->Stack_info).file,
+             (Stk->Stack_info).line,
+             Stk->canary_left,
+             Stk->canary_right,
+             Stk->hash,
+             Stk->size_Stk,
+             Stk->capacity_Stk,
+             Stk->buffer_stk);
 
-    for(int pos = 0; pos < stk->capacity_stk; pos++)
+    for(int pos = 0; pos < Stk->capacity_Stk; pos++)
     {
         fprintf (log_file,
                  "          [%d] = %lg        \n",
-                 pos, stk->buffer_stk[pos]);
+                 pos, Stk->buffer_stk[pos]);
     }
 
     fprintf (log_file,
@@ -210,27 +210,27 @@ void stack_dump_ (struct Stack *stk)
 
 //-----------------------------------------------------------------------------
 
-void check_errors (struct Stack *stk, int32_t new_hash)
+void check_errors (struct Stack *Stk, int new_hash)
 {
-    if(stk->canary_left != LEFT_CANARY)    (stk->Stack_info).error_codes |= ERR_CAN_1;
-    if(stk->canary_right != RIGHT_CANARY)  (stk->Stack_info).error_codes |= ERR_CAN_2;
-    if(stk->buffer_stk == NULL)            (stk->Stack_info).error_codes |= ERR_MEMBUF;
-    if(stk->capacity_stk < stk->size_stk)  (stk->Stack_info).error_codes |= ERR_OVERF;
-    if(stk->capacity_stk < 0)              (stk->Stack_info).error_codes |= ERR_CAP;
-    if(stk->size_stk < 0)                  (stk->Stack_info).error_codes |= ERR_SIZE;
-    if(stk == NULL)                        (stk->Stack_info).error_codes |= ERR_MEMSTK;
-    if(stk->hash != new_hash)              (stk->Stack_info).error_codes |= ERR_HASH;
+    if(Stk->canary_left != LEFT_CANARY)    (Stk->Stack_info).error_codes |= ERR_CAN_1;
+    if(Stk->canary_right != RIGHT_CANARY)  (Stk->Stack_info).error_codes |= ERR_CAN_2;
+    if(Stk->buffer_stk == NULL)            (Stk->Stack_info).error_codes |= ERR_MEMBUF;
+    if(Stk->capacity_Stk < Stk->size_Stk)  (Stk->Stack_info).error_codes |= ERR_OVERF;
+    if(Stk->capacity_Stk < 0)              (Stk->Stack_info).error_codes |= ERR_CAP;
+    if(Stk->size_Stk < 0)                  (Stk->Stack_info).error_codes |= ERR_SIZE;
+    if(Stk == NULL)                        (Stk->Stack_info).error_codes |= ERR_MEMStk;
+    if(Stk->hash != new_hash)              (Stk->Stack_info).error_codes |= ERR_HASH;
 }
 
 //-----------------------------------------------------------------------------
 
-void *recalloc (void *buffer, int capacity, int size)
+void *recalloc (void *buffer, int capacity, int size, int size_of_type)
 {
-    char *pointer = (char*) realloc ((char*) buffer, capacity * sizeof (double));
+    char *pointer = (char*) realloc ((char*) buffer, capacity * size_of_type);
 
     if(capacity > size)
     {
-        memset (pointer + size * sizeof (double), '\0', (capacity - size) * sizeof (double));
+        memset (pointer + size * size_of_type, '\0', (capacity - size) * size_of_type);
     }
 
     return (void*) pointer;
